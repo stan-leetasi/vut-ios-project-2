@@ -32,39 +32,39 @@ These values represent the following:
 
 ./po-sim 2 4 10 50 50
 
-1: Z 1: started 
-2: Z 2: started 
-3: U 1: started 
-4: U 1: taking break 
-5: U 4: started 
-6: U 4: taking break 
-7: U 3: started 
-8: U 3: taking break 
-9: U 2: started 
-10: U 2: taking break 
-11: Z 1: entering office for a service 2 
-12: Z 2: entering office for a service 2 
-13: U 2: break finished 
-14: Z 1: called by office worker 
-15: U 2: serving a service of type 2 
-16: U 3: break finished 
-17: U 3: serving a service of type 2 
-18: Z 2: called by office worker 
-19: Z 1: going home 
-20: U 2: service finished 
-21: U 2: taking break 
-22: U 3: service finished 
-23: U 3: taking break 
-24: Z 2: going home 
-25: closing 
-26: U 4: break finished 
-27: U 4: going home 
-28: U 1: break finished 
-29: U 1: going home 
-30: U 2: break finished 
-31: U 2: going home 
-32: U 3: break finished 
-33: U 3: going home 
+1: Z 1: started<br>
+2: Z 2: started <br>
+3: U 1: started <br>
+4: U 1: taking break <br>
+5: U 4: started <br>
+6: U 4: taking break <br>
+7: U 3: started <br>
+8: U 3: taking break <br>
+9: U 2: started <br>
+10: U 2: taking break<br> 
+11: Z 1: entering office for a service 2 <br>
+12: Z 2: entering office for a service 2 <br>
+13: U 2: break finished <br>
+14: Z 1: called by office worker <br>
+15: U 2: serving a service of type 2 <br>
+16: U 3: break finished <br>
+17: U 3: serving a service of type 2 <br>
+18: Z 2: called by office worker <br>
+19: Z 1: going home <br>
+20: U 2: service finished <br>
+21: U 2: taking break <br>
+22: U 3: service finished <br>
+23: U 3: taking break <br>
+24: Z 2: going home <br>
+25: closing <br>
+26: U 4: break finished <br>
+27: U 4: going home <br>
+28: U 1: break finished <br>
+29: U 1: going home <br>
+30: U 2: break finished <br>
+31: U 2: going home <br>
+32: U 3: break finished <br>
+33: U 3: going home <br>
 
 
 
