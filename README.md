@@ -10,11 +10,11 @@ The program aims to simulate a post office system with multiple customers and of
 
 1. Compile the code with the provided makefile:
 
-make po-sim
+`make po-sim`
 
 2. Execution syntax:
 
-./po-sim <NC> <NO> <TC> <TO> <PT>
+`./po-sim <NC> <NO> <TC> <TO> <PT>`
 
 
 These values represent the following:
@@ -27,10 +27,14 @@ These values represent the following:
 
 3. The program will simulate the post office system and export the output into the proj2.out file. If it doesn't exist, it will be created.
 
+4. Teardown - deletes the po-sim executable and proj2.out file
+
+`make clean`
+
 
 ## Example input and output(in proj2.out)
 
-./po-sim 2 4 10 50 50
+`./po-sim 2 4 10 50 50`
 
 1: Z 1: started<br>
 2: Z 2: started <br>
@@ -65,7 +69,3 @@ These values represent the following:
 31: U 2: going home <br>
 32: U 3: break finished <br>
 33: U 3: going home <br>
-
-
-
-

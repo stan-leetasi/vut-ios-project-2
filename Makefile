@@ -7,5 +7,5 @@ po-sim: main.c
 		$(CC) $(CFLAGS) main.c -o po-sim -lpthread
 
 clean:
-		rm -f po-sim
+		rm -f po-sim *.out
 		
