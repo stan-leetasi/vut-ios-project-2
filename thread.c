@@ -7,33 +7,34 @@
 #include <stdbool.h>
 #include "po.h"
 
-// Funkcia simulujúca zákazníka
+/**
+ * Simulates behavior of a customer
+ */
 void customer(int id){
 
-    srand(getpid() + id * time(NULL)); // Použité na generáciu náhodného času čakania a voľby úlohy
-
+    srand(getpid() + id * time(NULL));
     write_out("Z %i: started\n", id); 
-    usleep((rand()%(po_data->TC+1))); // Čakanie náhodnú dĺžku času pred vstúpením
+    usleep((rand()%(po_data->TC+1))); // wait before entering post office
 
-    sem_wait(data_access); 
+    sem_wait(data_access);
 
-    if(po_data->open == 1) // Ak je pošta otvorená
+    if(po_data->open == 1)
     {
-        int service = ((rand()%3) + 1); // Výber služby
-        write_out("Z %i: entering office for a service %i\n", id, service);
+        int service = ((rand()%3) + 1);
+        write_out("Z %i: entering office for service no. %i\n", id, service);
 
-        if(po_data->NO == 0) // Ak na pošte nie sú úradníci, proces zákazník končí
+        if(po_data->NO == 0) // no officers in post office
         {
-            sem_post(data_access);  // Odblokovanie prístupu k dátam o pošte
+            sem_post(data_access);
             write_out("Z %i: going home\n", id);
             exit(0);
         }
 
-        switch (service){ // Rozdelenie do fronty
+        switch (service){ // pick appropriate queue
         case 1:
-            po_data->q1++;          // Fronta sa predĺži
-            sem_post(data_access);  // Odblokovanie prístupu k dátam o pošte
-            sem_wait(letter_q);     // Zaradenie sa do fronty
+            po_data->q1++;
+            sem_post(data_access);  
+            sem_wait(letter_q);     // enter queue
             break;
         
         case 2:
@@ -48,34 +49,36 @@ void customer(int id){
             sem_wait(money_q);
             break;
         }
-    }
-    else
+    } // If - post office is open
+    else // post office is closed
     {
-        sem_post(data_access); // Odblokovanie prístupu k dátam o pošte
+        sem_post(data_access);
         write_out("Z %i: going home\n", id);
         exit(0);
     }
 
     write_out("Z %i: called by office worker\n", id);
-    usleep(rand()%10001);
+    usleep(rand()%10001); // time required for the operation to finish
     write_out("Z %i: going home\n", id);
 
     exit(0);
 }
 
-// Funkcia simulujúca úradníka
+/**
+ * Simulates behaviour of an officer
+ */
 void officer(int id){
 
-    srand(getpid() + id * time(NULL)); // Použité na generáciu náhodného času čakania a voľby úlohy
-
+    srand(getpid() + id * time(NULL)); 
     write_out("U %i: started\n", id);
 
-    int task; // Premenná určujúca ktorú frontu úradník obslúži
+    int task; // represents which queue the officer will handle
     while(true)
     {
         sem_wait(data_access);
 
-        if(po_data->q1 == 0 && po_data->q2 == 0 && po_data->q3 == 0 && po_data->open == 1) // Otvorená pošta, nikto nečaká, úradník ide na pauzu
+        // post office opened, no one is waiting, officer goes for a break
+        if(po_data->q1 == 0 && po_data->q2 == 0 && po_data->q3 == 0 && po_data->open == 1) 
         {
             write_out("U %i: taking break\n", id);
             sem_post(data_access);
@@ -83,80 +86,59 @@ void officer(int id){
             write_out("U %i: break finished\n", id);
             continue;
         }
-        if(po_data->q1 == 0 && po_data->q2 == 0 && po_data->q3 == 0 && po_data->open == 0) // Zatvorená pošta, nikto nečaká, úradník ide domov
+        // post office closed, no one is waiting, officer goes home
+        if(po_data->q1 == 0 && po_data->q2 == 0 && po_data->q3 == 0 && po_data->open == 0)
         {
             sem_post(data_access);
             write_out("U %i: going home\n", id);
             exit(0);
         }
-        if(po_data->q1 > 0 || po_data->q2 > 0 || po_data->q3 > 0) // Čaká aspoň 1 zákazník, nezáleží či je pošta otvorená
+        // at least one customer is waiting
+        if(po_data->q1 > 0 || po_data->q2 > 0 || po_data->q3 > 0)
         {
-            task = (rand()%3) + 1; // Náhodne zvolená fronta
+            task = (rand()%3) + 1; // choose queue
 
-            for(int i=0; i<3;) // i reprezentuje počet skontrolovaných qeues
-            {                  // aspoň jedna z front bude mať vždy aspoň 1 zákazníka, lebo úradník má v tomto momente data_access 
-                if(task==4)    // task je v rozmedzí <1, 3>
-                {
-                    task=1;
-                }
+            for(int i=0; i<3; i++) // i represents the number of checked queues
+            {
+                task = task % 3 + 1;
 
                 switch (task){
                 case 1:
-                    if(po_data->q1 > 0)         // Fronta 1 nie je prázdna
+                    if(po_data->q1 > 0) // queue not empty
                     {
-                        sem_post(letter_q);     // Obslúženie zákazníka
+                        sem_post(letter_q);
                         write_out("U %i: serving a service of type %i\n", id, task);
-                        po_data->q1--;          // Zmenšenie rady
-                        sem_post(data_access);  // Odblokovanie prístupu k dátam o pošte
-                        usleep(rand()%10001);      // Vykonávanie služby
-                        write_out("U %i: service finished\n", id);
-                        i = 3; // Ukončí for loop
+                        po_data->q1--;          
+                        break;
                     }
-                    else // Fronta je prázdna, skúsi či niekto čaká v ďalšej
-                    {
-                        task++; // Posunie sa na ďalšiu frontu
-                        i++;    // Pripočítanie counteru skontrolovaných qeues
-                    }
-                    break;      // Ukončí switch
+                    continue;
                        
                 case 2:
-                    if(po_data->q2 > 0)         // Fronta 2 nie je prázdna
+                    if(po_data->q2 > 0)
                     {
-                        sem_post(package_q);     // Obslúženie zákazníka
+                        sem_post(package_q);
                         write_out("U %i: serving a service of type %i\n", id, task);
-                        po_data->q2--;          // Zmenšenie rady
-                        sem_post(data_access);  // Odblokovanie prístupu k dátam o pošte 
-                        usleep(rand()%10001);      // Vykonávanie služby
-                        write_out("U %i: service finished\n", id);
-                        i = 3; // Ukončí for loop
+                        po_data->q2--;
+                        break;
                     }
-                    else // Fronta je prázdna, skúsi či niekto čaká v ďalšej
-                    {
-                        task++; // Posunie sa na ďalšiu frontu
-                        i++;    // Pripočítanie counteru skontrolovaných qeues
-                    }
-                    break;      // Ukončí switch
+                    continue;
 
                 case 3:
-                    if(po_data->q3 > 0)         // Fronta nie je prázdna
+                    if(po_data->q3 > 0)
                     {
-                        sem_post(money_q);     // Obslúženie zákazníka
+                        sem_post(money_q);
                         write_out("U %i: serving a service of type %i\n", id, task);
-                        po_data->q3--;          // Zmenšenie rady
-                        sem_post(data_access);  // Odblokovanie prístupu k dátam o pošte 
-                        usleep(rand()%10001);      // Vykonávanie služby
-                        write_out("U %i: service finished\n", id);
-                        i = 3; // Ukončí for loop
+                        po_data->q3--;
+                        break;
                     }
-                    else // Fronta je prázdna, skúsi či niekto čaká v ďalšej
-                    {
-                        task++; // Posunie sa na ďalšiu frontu        
-                        i++;    // Pripočítanie counteru skontrolovaných qeues
-                    }
-                    break;      // Ukončí switch
-                       
-                } // Switch statement
-            } // For loop na switch statement
-        } // If - Čaká aspoň 1 zákazník, nezáleží či je pošta otvorená
-    } // While loop procesu úradníka
-} // Funkcia officer
+                    continue;
+                } // switch statement
+
+                sem_post(data_access);  
+                usleep(rand()%10001); // process task
+                write_out("U %i: service finished\n", id);
+                break;
+            } // for loop
+        } // If - at least one customer is waiting in queue
+    } // while loop of the officer process
+}

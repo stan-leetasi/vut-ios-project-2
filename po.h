@@ -39,5 +39,6 @@ void remove_all();
 void write_out (const char * format, ...);
 void customer(int id);
 void officer(int id);
+void arg_operations(int argc, char *argv[]);
 
 #endif
